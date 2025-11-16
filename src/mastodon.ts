@@ -55,8 +55,11 @@ export class MastodonService {
         }
       }
 
-      // Create the status text with attribution
-      const statusText = `${post.text}\n\n🦋 Originally posted on Bluesky by @${post.author.handle}`;
+      // Create the status text with link to original post
+      // Extract the post ID from the URI (at://did:plc:.../app.bsky.feed.post/POST_ID)
+      const postId = post.uri.split('/').pop();
+      const blueskyUrl = `https://bsky.app/profile/${post.author.handle}/post/${postId}`;
+      const statusText = `${post.text}\n\n${blueskyUrl}`;
 
       // Post to Mastodon
       await this.client.v1.statuses.create({

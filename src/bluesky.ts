@@ -27,6 +27,11 @@ export class BlueskyService {
         const post = item.post;
         const record = post.record as any;
 
+        // Skip replies - only include main posts
+        if (record.reply) {
+          continue;
+        }
+
         const blueskyPost: BlueskyPost = {
           uri: post.uri,
           cid: post.cid,
