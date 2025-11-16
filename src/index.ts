@@ -7,14 +7,19 @@ import { Config } from './types';
 dotenv.config();
 
 function getConfig(): Config {
-  const blueskyUsername = process.env.BLUESKY_USERNAME;
-  const mastodonInstance = process.env.MASTODON_INSTANCE;
+  // Support both old and new environment variable names
+  const blueskyUsername = process.env.BLUESKY_HANDLE || process.env.BLUESKY_USERNAME || 'internethippo.bsky.social';
+  const mastodonInstance = process.env.MASTODON_URL || process.env.MASTODON_INSTANCE;
   const mastodonAccessToken = process.env.MASTODON_ACCESS_TOKEN;
-  const pollInterval = parseInt(process.env.POLL_INTERVAL || '120000', 10);
 
-  if (!blueskyUsername || !mastodonInstance || !mastodonAccessToken) {
+  // Support both milliseconds (POLL_INTERVAL) and minutes (POLL_INTERVAL_MINUTES)
+  const pollInterval = process.env.POLL_INTERVAL
+    ? parseInt(process.env.POLL_INTERVAL, 10)
+    : parseInt(process.env.POLL_INTERVAL_MINUTES || '2', 10) * 60 * 1000;
+
+  if (!mastodonInstance || !mastodonAccessToken) {
     throw new Error(
-      'Missing required environment variables. Please check your .env file.'
+      'Missing required environment variables. Please set MASTODON_URL and MASTODON_ACCESS_TOKEN.'
     );
   }
 
