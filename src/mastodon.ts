@@ -69,10 +69,12 @@ export class MastodonService {
         const quotedUrl = `https://bsky.app/profile/${quoted.author.handle}/post/${quotedPostId}`;
         const displayName = quoted.author.displayName || quoted.author.handle;
 
-        statusText += `\n\n---\nRE: ${displayName} (@${quoted.author.handle})\n"${quoted.text}"\n${quotedUrl}`;
+        // For quote posts: internethippo's text, then their link, then quoted content
+        statusText += `\n\n${blueskyUrl}\n\n---\nRE: ${displayName} (@${quoted.author.handle})\n"${quoted.text}"\n${quotedUrl}`;
+      } else {
+        // For regular posts: text then link at the end
+        statusText += `\n\n${blueskyUrl}`;
       }
-
-      statusText += `\n\n${blueskyUrl}`;
 
       // Post to Mastodon
       await this.client.v1.statuses.create({
