@@ -59,7 +59,20 @@ export class MastodonService {
       // Extract the post ID from the URI (at://did:plc:.../app.bsky.feed.post/POST_ID)
       const postId = post.uri.split('/').pop();
       const blueskyUrl = `https://bsky.app/profile/${post.author.handle}/post/${postId}`;
-      const statusText = `${post.text}\n\n${blueskyUrl}`;
+
+      let statusText = post.text;
+
+      // Handle quote posts - embed the quoted content
+      if (post.embed?.record) {
+        const quoted = post.embed.record;
+        const quotedPostId = quoted.uri.split('/').pop();
+        const quotedUrl = `https://bsky.app/profile/${quoted.author.handle}/post/${quotedPostId}`;
+        const displayName = quoted.author.displayName || quoted.author.handle;
+
+        statusText += `\n\n---\nRE: ${displayName} (@${quoted.author.handle})\n"${quoted.text}"\n${quotedUrl}`;
+      }
+
+      statusText += `\n\n${blueskyUrl}`;
 
       // Post to Mastodon
       await this.client.v1.statuses.create({

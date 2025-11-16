@@ -43,16 +43,65 @@ export class BlueskyService {
           },
         };
 
-        // Handle embedded images
-        if (post.embed && post.embed.$type === 'app.bsky.embed.images#view') {
+        // Handle embedded content
+        if (post.embed) {
           const embedView = post.embed as any;
-          if (embedView.images && Array.isArray(embedView.images)) {
-            blueskyPost.embed = {
-              images: embedView.images.map((img: any) => ({
+
+          // Handle images
+          if (post.embed.$type === 'app.bsky.embed.images#view') {
+            if (embedView.images && Array.isArray(embedView.images)) {
+              blueskyPost.embed = {
+                images: embedView.images.map((img: any) => ({
+                  fullsize: img.fullsize,
+                  alt: img.alt,
+                })),
+              };
+            }
+          }
+
+          // Handle quote posts (record embed)
+          if (post.embed.$type === 'app.bsky.embed.record#view') {
+            const quotedPost = embedView.record;
+            if (quotedPost && quotedPost.value) {
+              blueskyPost.embed = {
+                record: {
+                  author: {
+                    handle: quotedPost.author.handle,
+                    displayName: quotedPost.author.displayName,
+                  },
+                  text: quotedPost.value.text || '',
+                  uri: quotedPost.uri,
+                },
+              };
+            }
+          }
+
+          // Handle quote posts with media (recordWithMedia)
+          if (post.embed.$type === 'app.bsky.embed.recordWithMedia#view') {
+            const quotedPost = embedView.record?.record;
+            const media = embedView.media;
+
+            blueskyPost.embed = {};
+
+            // Extract quoted record
+            if (quotedPost && quotedPost.value) {
+              blueskyPost.embed.record = {
+                author: {
+                  handle: quotedPost.author.handle,
+                  displayName: quotedPost.author.displayName,
+                },
+                text: quotedPost.value.text || '',
+                uri: quotedPost.uri,
+              };
+            }
+
+            // Extract media (images)
+            if (media && media.$type === 'app.bsky.embed.images#view' && media.images) {
+              blueskyPost.embed.images = media.images.map((img: any) => ({
                 fullsize: img.fullsize,
                 alt: img.alt,
-              })),
-            };
+              }));
+            }
           }
         }
 

@@ -12,6 +12,14 @@ export interface BlueskyPost {
       fullsize: string;
       alt?: string;
     }>;
+    record?: {
+      author: {
+        handle: string;
+        displayName?: string;
+      };
+      text: string;
+      uri: string;
+    };
   };
 }
 
