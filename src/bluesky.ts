@@ -63,16 +63,27 @@ export class BlueskyService {
           if (post.embed.$type === 'app.bsky.embed.record#view') {
             const quotedPost = embedView.record;
             if (quotedPost && quotedPost.value) {
-              blueskyPost.embed = {
-                record: {
-                  author: {
-                    handle: quotedPost.author.handle,
-                    displayName: quotedPost.author.displayName,
-                  },
-                  text: quotedPost.value.text || '',
-                  uri: quotedPost.uri,
+              const recordData: any = {
+                author: {
+                  handle: quotedPost.author.handle,
+                  displayName: quotedPost.author.displayName,
                 },
+                text: quotedPost.value.text || '',
+                uri: quotedPost.uri,
               };
+
+              // Extract images from quoted post if present
+              if (quotedPost.embeds && quotedPost.embeds.length > 0) {
+                const quotedEmbed = quotedPost.embeds[0];
+                if (quotedEmbed.$type === 'app.bsky.embed.images#view' && quotedEmbed.images) {
+                  recordData.images = quotedEmbed.images.map((img: any) => ({
+                    fullsize: img.fullsize,
+                    alt: img.alt,
+                  }));
+                }
+              }
+
+              blueskyPost.embed = { record: recordData };
             }
           }
 
@@ -85,7 +96,7 @@ export class BlueskyService {
 
             // Extract quoted record
             if (quotedPost && quotedPost.value) {
-              blueskyPost.embed.record = {
+              const recordData: any = {
                 author: {
                   handle: quotedPost.author.handle,
                   displayName: quotedPost.author.displayName,
@@ -93,6 +104,19 @@ export class BlueskyService {
                 text: quotedPost.value.text || '',
                 uri: quotedPost.uri,
               };
+
+              // Extract images from quoted post if present
+              if (quotedPost.embeds && quotedPost.embeds.length > 0) {
+                const quotedEmbed = quotedPost.embeds[0];
+                if (quotedEmbed.$type === 'app.bsky.embed.images#view' && quotedEmbed.images) {
+                  recordData.images = quotedEmbed.images.map((img: any) => ({
+                    fullsize: img.fullsize,
+                    alt: img.alt,
+                  }));
+                }
+              }
+
+              blueskyPost.embed.record = recordData;
             }
 
             // Extract media (images)

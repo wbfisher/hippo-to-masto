@@ -19,6 +19,10 @@ export interface BlueskyPost {
       };
       text: string;
       uri: string;
+      images?: Array<{
+        fullsize: string;
+        alt?: string;
+      }>;
     };
   };
 }
